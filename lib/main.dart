@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/scheduler.dart';
 import 'firebase_options.dart';
 import 'home.dart';
 import 'login.dart';
@@ -10,6 +11,7 @@ import 'intro_page.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
+
  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -27,13 +29,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthWrapper(),
         '/intro': (context) => IntroPage(),
         '/signin': (context) => const SignIn(),
         '/signup': (context) => const SignUp(),
-        '/home': (context) => HomePage(fullName: ''),
+        '/home': (context) => const HomePage(),
       },
     );
   }
@@ -52,28 +55,7 @@ class AuthWrapper extends StatelessWidget {
           if (user == null) {
             return IntroPage();
           } else {
-            return FutureBuilder<String>(
-              future: _getFullName(user.uid),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.hasData) {
-                    return HomePage(fullName: snapshot.data!);
-                  } else {
-                    return const Scaffold(
-                      body: Center(
-                        child: Text('Error retrieving full name'),
-                      ),
-                    );
-                  }
-                } else {
-                  return const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-              },
-            );
+            return HomePage();
           }
         } else {
           return const Scaffold(

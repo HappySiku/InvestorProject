@@ -2,9 +2,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
-  final String fullName;
 
-  const HomePage({Key? key, required this.fullName}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +30,7 @@ class HomePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome, $fullName',
+                'Welcome',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
