@@ -6,12 +6,15 @@ import 'firebase_options.dart';
 import 'home.dart';
 import 'login.dart';
 import 'sign_up.dart';
-import 'into_page.dart';
+import 'intro_page.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+ WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+ FlutterNativeSplash.remove();
+ runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

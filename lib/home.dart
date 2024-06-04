@@ -142,7 +142,7 @@ class HomePage extends StatelessWidget {
                 },
                 options: CarouselOptions(
                   height: MediaQuery.of(context).size.height * 0.2,
-                  enableInfiniteScroll: false,
+                  enableInfiniteScroll: true,
                   viewportFraction: 0.3,
 
                 ),
