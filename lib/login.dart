@@ -27,12 +27,12 @@ class _SignInState extends State<SignIn> {
   }
 
   bool _validatePassword(String password) {
-    return password.isNotEmpty && password.length >= 6;
+    return password.isNotEmpty && password.length  >= 6;
   }
 
   Future<void> _signIn() async {
     final email = _emailController.text.trim();
-    final password = _passwordController.text;
+    final password = _passwordController.text.trim();
 
     if (!_validateEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
