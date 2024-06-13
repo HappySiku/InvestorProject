@@ -1,3 +1,4 @@
+import 'package:assessment/home.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -59,7 +60,12 @@ class _SignInState extends State<SignIn> {
       );
 
       // Navigate to home screen or another screen after successful sign-in
-      Navigator.pushNamed(context, '/home');
+      Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+              (route) {
+                return false;
+              });
+
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'user-not-found') {
