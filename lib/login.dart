@@ -60,11 +60,11 @@ class _SignInState extends State<SignIn> {
       );
 
       // Navigate to home screen or another screen after successful sign-in
-      Navigator.pushAndRemoveUntil(context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-              (route) {
-                return false;
-              });
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/home',
+            (route) => false,
+      );
 
     } on FirebaseAuthException catch (e) {
       String message;
