@@ -96,7 +96,7 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Hikes',
+                    'Upcoming Hikes',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   InkWell(
