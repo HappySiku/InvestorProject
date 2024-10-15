@@ -151,7 +151,7 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.black,
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(
@@ -173,7 +173,7 @@ class _SignInState extends State<SignIn> {
                     },
                     child: const Text(
                       'You don\'t have an account? Sign up',
-                      style: TextStyle(color: Colors.green),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                 ),

@@ -13,30 +13,31 @@ class IntroPage extends StatelessWidget {
             Expanded(
               child: Center(
                 child: Image.asset(
-                  'assets/images/welcome.png',
+                  'assets/images/hiking.png',
                   // Update with your image asset path
-                  height: 250,
+                  height: 100,
                 ),
               ),
             ),
             Text(
-              'Stay on top of your \n finance with us.',
+              'Welcome to M-Hike',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 36,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Where the trail awaits.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                fontSize: 20,
+                color: Colors.grey[600],
               ),
             ),
             SizedBox(height: 10),
-            Text(
-              'We are your new financial Advisors \n to recommend the best investments for \n you.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
+
             SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
@@ -50,7 +51,7 @@ class IntroPage extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.black,
                   padding: EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
@@ -67,7 +68,7 @@ class IntroPage extends StatelessWidget {
                 },
                 child: Text(
                   'Login',
-                  style: TextStyle(color: Colors.green),
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ),

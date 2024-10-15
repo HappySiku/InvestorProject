@@ -13,12 +13,18 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool _obs = true;
+  bool _obs2 = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -72,6 +78,15 @@ class _SignUpState extends State<SignUp> {
     return regExp.hasMatch(email);
   }
 
+  bool validatePassword(String password) {
+    if (password.length < 6) {
+      return false;
+    } else if (password != _confirmPasswordController.text) {
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,7 +119,7 @@ class _SignUpState extends State<SignUp> {
               const SizedBox(height: 8),
               Center(
                 child: Text(
-                  'Invest and double your income now',
+                  'Get ready to conquer the trail.',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -133,9 +148,39 @@ class _SignUpState extends State<SignUp> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: _obs,
                 decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obs ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obs = !_obs;
+                      });
+                    },
+                  ),
                   labelText: 'Password',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: _obs2,
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obs2 ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obs2 = !_obs2;
+                      });
+                    },
+                  ),
+                  labelText: 'Confirm Password',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
@@ -144,30 +189,44 @@ class _SignUpState extends State<SignUp> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (!validateEmail(_emailController.text.trim())) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content:
-                                Text('Please enter a valid email address')),
-                      );
-                      return;
-                    }
-                    _signUp();
-                    Navigator.pushNamed(context, '/signin');
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          if (!validateEmail(_emailController.text.trim())) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please enter a valid email address')),
+                            );
+                            return;
+                          } else if (!validatePassword(
+                              _passwordController.text)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Passwords must  match')),
+                            );
+                            return;
+                          } else {
+                            _signUp();
 
-
-                  },
+                            Navigator.pushNamed(context, '/signin');
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.black,
                   ),
-                  child: const Text(
-                    'Create account',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                      : const Text(
+                          'Create account',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -179,7 +238,7 @@ class _SignUpState extends State<SignUp> {
                   },
                   child: const Text(
                     'Already have an account?',
-                    style: TextStyle(color: Colors.green),
+                    style: TextStyle(color: Colors.black),
                   ),
                 ),
               ),

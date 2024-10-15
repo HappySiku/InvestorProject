@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/scheduler.dart';
 import 'firebase_options.dart';
 import 'home.dart';
 import 'login.dart';
 import 'sign_up.dart';
 import 'intro_page.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-
 Future<void> main() async {
-
- WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
- FlutterNativeSplash.remove();
- runApp(const MyApp());
+  FlutterNativeSplash.remove();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -55,7 +51,7 @@ class AuthWrapper extends StatelessWidget {
           if (user == null) {
             return IntroPage();
           } else {
-            return HomePage();
+            return const HomePage();
           }
         } else {
           return const Scaffold(
@@ -66,10 +62,5 @@ class AuthWrapper extends StatelessWidget {
         }
       },
     );
-  }
-
-  Future<String> _getFullName(String uid) async {
-    var document = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-    return document.data()?['fullName'] ?? 'User';
   }
 }

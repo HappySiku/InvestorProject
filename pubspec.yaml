@@ -50,7 +50,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_native_splash: ^2.4.0
+  flutter_native_splash: ^2.4.1
 
 
 
@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/images/splash.png
     - assets/images/welcome.png
+    - assets/images/hiking.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
