@@ -1,7 +1,10 @@
+import 'package:assessment/trails.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'add_hike.dart';
 import 'firebase_options.dart';
+import 'hike_details.dart';
 import 'home.dart';
 import 'login.dart';
 import 'sign_up.dart';
@@ -33,6 +36,9 @@ class MyApp extends StatelessWidget {
         '/signin': (context) => const SignIn(),
         '/signup': (context) => const SignUp(),
         '/home': (context) => const HomePage(),
+        '/hike_details': (context) =>  HikeDetails(),
+        '/trails': (context) => const Trails(),
+        '/add_hike': (context) => const AddHike(),
       },
     );
   }

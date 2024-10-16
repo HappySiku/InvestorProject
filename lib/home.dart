@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.terrain, color: Colors.green),
             SizedBox(width: 10),
@@ -160,6 +160,7 @@ class HomePage extends StatelessWidget {
             label: 'Explore',
           ),
           BottomNavigationBarItem(
+
             icon: Icon(Icons.map),
             label: 'Trails',
           ),
@@ -222,7 +223,7 @@ class TrailReviewItem extends StatelessWidget {
   final String difficulty; // Level of difficulty
   final String? description; // Optional description
   final String? weatherForecast; // Weather forecast - custom field
-  final String? wildlife; // Wildlife sightings - custom field
+  final String? wildlife;// Wildlife sightings - custom field
 
   const TrailReviewItem({
     Key? key,
@@ -235,6 +236,7 @@ class TrailReviewItem extends StatelessWidget {
     this.description,
     this.weatherForecast,
     this.wildlife,
+
   }) : super(key: key);
 
   @override
@@ -242,27 +244,32 @@ class TrailReviewItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Location: $location'),
-              Text('Date: $date'),
-              Text('Parking Available: ${parkingAvailable ? 'Yes' : 'No'}'),
-              Text('Length: $length'),
-              Text('Difficulty: $difficulty'),
-              if (description != null && description!.isNotEmpty)
-                Text('Description: $description'),
-              if (weatherForecast != null && weatherForecast!.isNotEmpty)
-                Text('Weather Forecast: $weatherForecast'),
-              if (wildlife != null && wildlife!.isNotEmpty)
-                Text('Wildlife Sightings: $wildlife'),
-            ],
+        InkWell(
+          onTap: () {
+          Navigator.pushNamed(context, '/hike_details');
+          },
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              title,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Location: $location'),
+                Text('Date: $date'),
+                Text('Parking Available: ${parkingAvailable ? 'Yes' : 'No'}'),
+                Text('Length: $length'),
+                Text('Difficulty: $difficulty'),
+                if (description != null && description!.isNotEmpty)
+                  Text('Description: $description'),
+                if (weatherForecast != null && weatherForecast!.isNotEmpty)
+                  Text('Weather Forecast: $weatherForecast'),
+                if (wildlife != null && wildlife!.isNotEmpty)
+                  Text('Wildlife Sightings: $wildlife'),
+              ],
+            ),
           ),
         ),
         const Divider(),
