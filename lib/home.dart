@@ -1,8 +1,13 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  Future<String> _getUserName() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('fullName') ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +29,7 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.map, color: Colors.black),
+            icon: const Icon(Icons.account_circle, color: Colors.black),
             onPressed: () {},
           ),
         ],
@@ -35,13 +40,30 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Welcome, Explorer!',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+              FutureBuilder<String>(
+                future: _getUserName(),
+                builder: (context, snapshot) {
+
+                  if(snapshot.connectionState==ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                    return const Text('Welcome, Explorer!',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                    );
+                  } else {
+                    return Text('Welcome, ${snapshot.data}!',
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 20),
               Container(
@@ -64,7 +86,7 @@ class HomePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Let\'s get you started.',
+                          'Get started.',
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -278,262 +300,3 @@ class TrailReviewItem extends StatelessWidget {
   }
 }
 
-// import 'package:carousel_slider/carousel_slider.dart';
-// import 'package:flutter/material.dart';
-//
-// class HomePage extends StatelessWidget {
-//   const HomePage({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.grey[100],
-//       appBar: AppBar(
-//         elevation: 0,
-//         backgroundColor: Colors.transparent,
-//         actions: [
-//           IconButton(
-//             icon: const Icon(Icons.notifications_none, color: Colors.black),
-//             onPressed: () {},
-//           ),
-//         ],
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const Text(
-//                 'Welcome',
-//                 style: TextStyle(
-//                   fontSize: 24,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               const SizedBox(height: 20),
-//               Container(
-//                 padding: const EdgeInsets.all(20),
-//                 decoration: BoxDecoration(
-//                   color: Colors.green,
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     const Text(
-//                       '',
-//                       style: TextStyle(color: Colors.white, fontSize: 16),
-//                     ),
-//                     const SizedBox(height: 10),
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         const Text(
-//                           '',
-//                           style: TextStyle(
-//                               color: Colors.white,
-//                               fontSize: 24,
-//                               fontWeight: FontWeight.bold),
-//                         ),
-//                         SizedBox(width: 10),
-//                         ElevatedButton(
-//                           style: ElevatedButton.styleFrom(
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(14),
-//                             ),
-//                             padding: const EdgeInsets.symmetric(
-//                                 horizontal: 20, vertical: 10),
-//                           ),
-//                           onPressed: () {},
-//                           child: const Text('Go',
-//                               style: TextStyle(
-//                                 color: Colors.green,
-//                               )),
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               SizedBox(height: 20),
-//               const Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Text(
-//                     'Most Visited',
-//                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//                   ),
-//                   Row(
-//                     children: [
-//                       Text(
-//                         'See All',
-//                         style: TextStyle(color: Colors.red),
-//                       ),
-//                       SizedBox(width: 5),
-//                       Icon(
-//                         Icons.arrow_forward,
-//                         color: Colors.red,
-//                         size: 16,
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//               SizedBox(height: 10),
-//               // add a carousel
-//               CarouselSlider.builder(
-//                 itemCount: 3,
-//                 itemBuilder: (context, index, realIndex) {
-//                   switch (index) {
-//                     case 0:
-//                       return PlanCard(
-//                         color: Colors.green,
-//                         title: 'Alps',
-//                         returnPercentage: '',
-//                       );
-//                     case 1:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'Everest',
-//                         returnPercentage: '',
-//                       );
-//                     case 2:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'Lukenya',
-//                         returnPercentage: '',
-//                       );
-//                     default:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'M. Kenya',
-//                         returnPercentage: '',
-//                       );
-//                   }
-//                 },
-//                 options: CarouselOptions(
-//                   height: MediaQuery.of(context).size.height * 0.2,
-//                   enableInfiniteScroll: true,
-//                   viewportFraction: 0.3,
-//                 ),
-//               ),
-//
-//               SizedBox(height: 20),
-//               const Text(
-//                 'Route Reviews',
-//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//               ),
-//               SizedBox(height: 10),
-//               const InvestmentGuideItem(
-//                 title: 'Himalayas',
-//                 description: 'Great views',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Mount Kenya',
-//                 description: 'Lovely adventure',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Mount Everest',
-//                 description: 'Explore the highest peak',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Lukenya',
-//                 description: 'Connect with nature',
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//       bottomNavigationBar: BottomNavigationBar(
-//         type: BottomNavigationBarType.fixed,
-//         items: const [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map_sharp),
-//             label: 'Routes',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.account_circle),
-//             label: 'Account',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// class PlanCard extends StatelessWidget {
-//   final Color color;
-//   final String title;
-//   final String returnPercentage;
-//
-//   const PlanCard({
-//     Key? key,
-//     required this.color,
-//     required this.title,
-//     required this.returnPercentage,
-//   }) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: 100,
-//       padding: EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: color,
-//         borderRadius: BorderRadius.circular(12),
-//       ),
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.start,
-//         children: [
-//           Text(
-//             title,
-//             style: TextStyle(
-//                 color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-//           ),
-//           SizedBox(height: 10),
-//           Text(
-//             returnPercentage,
-//             style: TextStyle(color: Colors.white),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// class InvestmentGuideItem extends StatelessWidget {
-//   final String title;
-//   final String description;
-//
-//   const InvestmentGuideItem({
-//     Key? key,
-//     required this.title,
-//     required this.description,
-//   }) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         ListTile(
-//           contentPadding: EdgeInsets.zero,
-//           trailing: const CircleAvatar(
-//             backgroundColor: Colors.blue,
-//             child: Icon(Icons.book, color: Colors.white),
-//           ),
-//           title: Text(
-//             title,
-//             style: TextStyle(fontWeight: FontWeight.bold),
-//           ),
-//           subtitle: Text(description),
-//         ),
-//         Divider(),
-//       ],
-//     );
-//   }
-// }

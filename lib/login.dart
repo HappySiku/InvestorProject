@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -19,6 +21,8 @@ class _SignInState extends State<SignIn> {
     _passwordController.dispose();
     super.dispose();
   }
+
+
 
   bool _validateEmail(String email) {
     const pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
@@ -57,6 +61,12 @@ class _SignInState extends State<SignIn> {
         email: email,
         password: password,
       );
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('email', email);
+
+
 
       // Navigate to home screen or another screen after successful sign-in
       Navigator.pushNamedAndRemoveUntil(
