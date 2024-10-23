@@ -1,52 +1,86 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-// Define the data model for a hike (optional)
-class Hike {
-  final String name;
-  final String location;
-  final String date;
-  final bool parkingAvailable;
-  final String length;
-  final String difficulty;
-
-  Hike({
-    required this.name,
-    required this.location,
-    required this.date,
-    required this.parkingAvailable,
-    required this.length,
-    required this.difficulty,
-  });
-}
-
 class AddHikeForm extends StatefulWidget {
+  final String? hikeId; // Optional hike ID for editing
+  final String? title;
+  final String? location;
+  final String? description;
+  final Timestamp? date;
+  final bool parkingAvailable;
+  final dynamic length;
+  final String? difficulty;
+
+  const AddHikeForm({
+    Key? key,
+    this.hikeId,
+    this.title,
+    this.location,
+    this.description,
+    this.date,
+    this.parkingAvailable = false,
+    this.length = 0.0,
+    this.difficulty,
+  }) : super(key: key);
+
   @override
   _AddHikeFormState createState() => _AddHikeFormState();
 }
 
 class _AddHikeFormState extends State<AddHikeForm> {
   final _formKey = GlobalKey<FormState>();
-  String _name = "";
-  String _location = "";
-  String _date = "";
-  bool _parkingAvailable = false;
-  String _length = "";
-  String _difficulty = "Easy";
-  DateTime? _selectedDate;
+  late String title;
+  late String location;
+  late String description;
+  late bool parkingAvailable;
+  late dynamic length;
+  late String difficulty;
+  late Timestamp date;
 
-  // Function to show date picker
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _date = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-      });
+  @override
+  void initState() {
+    super.initState();
+    // Initialize fields with existing hike data if editing
+    title = widget.title ?? '';
+    location = widget.location ?? '';
+    description = widget.description ?? '';
+    parkingAvailable = widget.parkingAvailable;
+    length = widget.length ?? 0.0;
+    difficulty = widget.difficulty ?? 'Easy';
+    date = widget.date ?? Timestamp.now();
+  }
+
+  Future<void> _saveHike() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      final hikesCollection = FirebaseFirestore.instance.collection('hikes');
+
+      if (widget.hikeId != null) {
+        // Update existing hike
+        await hikesCollection.doc(widget.hikeId).update({
+          'title': title,
+          'location': location,
+          'description': description,
+          'date': date,
+          'parkingAvailable': parkingAvailable,
+          'length': length,
+          'difficulty': difficulty,
+        });
+      } else {
+        // Add new hike
+        await hikesCollection.add({
+          'title': title,
+          'location': location,
+          'description': description,
+          'date': date,
+          'parkingAvailable': parkingAvailable,
+          'length': length,
+          'difficulty': difficulty,
+        });
+      }
+
+      Navigator.pop(context, true);
     }
   }
 
@@ -54,150 +88,98 @@ class _AddHikeFormState extends State<AddHikeForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Hike'),
+        title: const Text(''),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveHike,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Name Field
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a name for the hike.';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) => setState(() => _name = value),
-                ),
-                const SizedBox(height: 16.0),
-
-                // Location Field
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Location",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the location of the hike.';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) => setState(() => _location = value),
-                ),
-                const SizedBox(height: 16.0),
-
-                // Date Picker Field
-                TextFormField(
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: "Date",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    suffixIcon: const Icon(Icons.calendar_today_outlined),
-                  ),
-                  onTap: () => _selectDate(context),
-                  controller: TextEditingController(text: _date),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select the date of the hike.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-
-                // Parking Available Field
-                Row(
-                  children: [
-                    const Text('Parking Available:'),
-                    Checkbox(
-                      value: _parkingAvailable,
-                      onChanged: (value) => setState(() => _parkingAvailable = value!),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16.0),
-
-                // Length Field
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Length (e.g., 5km)",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the length of the hike.';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) => setState(() => _length = value),
-                ),
-                const SizedBox(height: 16.0),
-
-                // Difficulty Dropdown
-                DropdownButtonFormField<String>(
-                  value: _difficulty,
-                  items: const [
-                    DropdownMenuItem(
-                      value: "Easy",
-                      child: Text('Easy'),
-                    ),
-                    DropdownMenuItem(
-                      value: "Moderate",
-                      child: Text('Moderate'),
-                    ),
-                    DropdownMenuItem(
-                      value: "Hard",
-                      child: Text('Hard'),
-                    ),
-                  ],
-                  onChanged: (value) => setState(() => _difficulty = value!),
-                  decoration: InputDecoration(
-                    labelText: 'Select Hike Difficulty',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-
-                // Save Button
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      final newHike = Hike(
-                        name: _name,
-                        location: _location,
-                        date: _date,
-                        parkingAvailable: _parkingAvailable,
-                        length: _length,
-                        difficulty: _difficulty,
-                      );
-                      Navigator.pop(context, newHike);
-                    }
-                  },
-                  child: const Text('Save Hike'),
-                ),
-              ],
-            ),
+          child: Column(
+            children: [
+              TextFormField(
+                initialValue: title,
+                decoration: const InputDecoration(labelText: 'Hike Title'),
+                onSaved: (value) {
+                  title = value ?? '';
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                initialValue: location,
+                decoration: const InputDecoration(labelText: 'Location'),
+                onSaved: (value) {
+                  location = value ?? '';
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a location';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                initialValue: description,
+                decoration: const InputDecoration(labelText: 'Description'),
+                onSaved: (value) {
+                  description = value ?? '';
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Parking Available'),
+                value: parkingAvailable,
+                onChanged: (value) {
+                  setState(() {
+                    parkingAvailable = value;
+                  });
+                },
+              ),
+              TextFormField(
+                initialValue: length.toString(),
+                decoration: const InputDecoration(labelText: 'Length (m)'),
+                keyboardType: TextInputType.number,
+                onSaved: (value) {
+                  length = double.tryParse(value ?? '0') ?? 0.0;
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a length';
+                  }
+                  return null;
+                },
+              ),
+              DropdownButtonFormField<String>(
+                value: difficulty,
+                decoration: const InputDecoration(labelText: 'Difficulty'),
+                items: <String>['Easy', 'Moderate', 'Hard']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    difficulty = value ?? 'Easy';
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _saveHike,
+                child: const Text('Save Hike'),
+              ),
+            ],
           ),
         ),
       ),

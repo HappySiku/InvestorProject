@@ -8,14 +8,12 @@ class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   Future<String?> _getUserName() async {
-     SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userName = prefs.getString('fullName');
 
     if (userName != null && userName.isNotEmpty) {
       return userName;
-    }
-    else {
-      // If the username is not available in shared preferences, get it from Firestore
+    } else {
       final user = await FirebaseFirestore.instance
           .collection('users')
           .doc('uid')
@@ -32,13 +30,45 @@ class HomePage extends StatelessWidget {
 
   Stream<List<Map<String, dynamic>>> _getHikes() {
     final CollectionReference hikesCollection =
-        FirebaseFirestore.instance.collection('hikes');
+    FirebaseFirestore.instance.collection('hikes');
 
     return hikesCollection.snapshots().map((querySnapshot) {
       return querySnapshot.docs.map((doc) {
-        return doc.data() as Map<String, dynamic>; // Correct casting
+        return {
+          'id': doc.id, // Add document ID for reference
+          ...doc.data() as Map<String, dynamic>, // Correct casting
+        };
       }).toList();
     });
+  }
+
+  Future<void> _deleteHike(String hikeId) async {
+    await FirebaseFirestore.instance.collection('hikes').doc(hikeId).delete();
+  }
+
+  void _confirmDelete(BuildContext context, String hikeId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: const Text('Are you sure you want to delete this hike?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteHike(hikeId); // Call the delete function
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -54,8 +84,7 @@ class HomePage extends StatelessWidget {
             SizedBox(width: 10),
             Text(
               'M-Hike',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -87,7 +116,7 @@ class HomePage extends StatelessWidget {
                       ),
                     );
                   } else {
-                    String? userName = snapshot.data?? 'Explorer';
+                    String? userName = snapshot.data ?? 'Explorer';
                     return Text(
                       'Welcome, $userName!',
                       style: const TextStyle(
@@ -137,17 +166,14 @@ class HomePage extends StatelessWidget {
                                 horizontal: 20, vertical: 10),
                           ),
                           onPressed: () async {
-                            // Use async/await for modal result
                             final newHike = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AddHikeForm(),
                               ),
                             );
-                            // Handle the returned new hike data if any
                             if (newHike != null) {
-                              // Add logic to handle the new hike data
-                              print(newHike); // Example usage of returned data
+                              print(newHike);
                             }
                           },
                           child: const Text('Add hike',
@@ -173,14 +199,14 @@ class HomePage extends StatelessWidget {
                     child: Row(
                       children: [
                         IconButton(
-                            onPressed: () {}, icon: const Icon(Icons.search)),
+                          onPressed: () {},
+                          icon: const Icon(Icons.search),
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-              //add a static image
-
               SizedBox(height: 10),
               StreamBuilder<List<Map<String, dynamic>>>(
                 stream: _getHikes(),
@@ -189,13 +215,14 @@ class HomePage extends StatelessWidget {
                     return const CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return const Text('Failed to load hikes');
-                  } else if (snapshot.data!.isEmpty || !snapshot.hasData) {
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No hikes available');
                   } else {
                     final hikes = snapshot.data!;
                     return Column(
                       children: hikes.map((hike) {
                         return TrailReviewItem(
+                          id: hike['id'] as String?, // Pass the ID
                           title: hike['title'] as String?,
                           location: hike['location'] as String?,
                           date: hike['date'] as Timestamp?,
@@ -203,6 +230,7 @@ class HomePage extends StatelessWidget {
                           length: hike['length'],
                           difficulty: hike['difficulty'] as String?,
                           description: hike['description'] as String?,
+                          onDelete: _confirmDelete, // Pass the confirm delete function
                         );
                       }).toList(),
                     );
@@ -232,60 +260,22 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
-  // Helper methods to get images and data
-  String getImageUrl(int index) {
-    switch (index) {
-      case 0:
-        return 'assets/images/splash.png';
-      case 1:
-        return 'assets/images/splash.png';
-      case 2:
-        return 'assets/images/splash.png';
-      default:
-        return 'assets/images/splash.png';
-    }
-  }
-
-  String getTrailName(int index) {
-    switch (index) {
-      case 0:
-        return 'Alps';
-      case 1:
-        return 'Everest';
-      case 2:
-        return 'Lukenya';
-      default:
-        return 'Mount Kenya';
-    }
-  }
-
-  String getTrailDifficulty(int index) {
-    switch (index) {
-      case 0:
-        return 'Moderate';
-      case 1:
-        return 'Hard';
-      case 2:
-        return 'Easy';
-      default:
-        return 'Moderate';
-    }
-  }
 }
 
 class TrailReviewItem extends StatelessWidget {
-  final String? title; // Name of the hike
-  final String? location; // Location of the hike
-  final Timestamp? date; // Date of the hike
-  final bool? parkingAvailable; // Parking available (Yes or No)
-  final dynamic length; // Length of the hike
-  final String? difficulty; // Level of difficulty
-  final String? description; // Optional description
-
+  final String? id;
+  final String? title;
+  final String? location;
+  final Timestamp? date;
+  final bool? parkingAvailable;
+  final dynamic length;
+  final String? difficulty;
+  final String? description;
+  final Function(BuildContext, String) onDelete; // Update the type
 
   const TrailReviewItem({
     Key? key,
+    this.id,
     this.title,
     this.location,
     this.date,
@@ -293,7 +283,7 @@ class TrailReviewItem extends StatelessWidget {
     this.length,
     this.difficulty,
     this.description,
-
+    required this.onDelete, // Require the delete function
   }) : super(key: key);
 
   @override
@@ -306,10 +296,10 @@ class TrailReviewItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 3), // changes position of shadow
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -321,95 +311,79 @@ class TrailReviewItem extends StatelessWidget {
               Navigator.pushNamed(context, '/hike_details');
             },
             child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              title ?? 'Unknown',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                title ?? 'Unknown',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.black87,
+                ),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Location: ${location ?? 'Unknown'}'),
-                Text(
-                    'Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}'),
-                Text(
-                    'Parking Available: ${parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No'}'),
-                Text('Length: ${length != null ? ('${length}m') : 'Unknown'}'),
-                Text('Difficulty: ${difficulty ?? 'Unknown'}'),
-                if (description != null && description!.isNotEmpty)
-                  Text('Description: $description'),
+                  const SizedBox(height: 4),
+                  Text('Location: ${location ?? 'Unknown'}', style: TextStyle(fontSize: 16)),
+                  Text('Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}', style: TextStyle(fontSize: 16)),
+                  Text('Parking Available: ${parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No'}', style: TextStyle(fontSize: 16)),
+                  Text('Length: ${length != null ? ('${length}m') : 'Unknown'}', style: TextStyle(fontSize: 16)),
+                  Text('Difficulty: ${difficulty ?? 'Unknown'}', style: TextStyle(fontSize: 16)),
+                  if (description != null && description!.isNotEmpty)
+                    Text('Description: $description', style: TextStyle(fontSize: 16)),
                 ],
               ),
-
             ),
           ),
-          const SizedBox(height: 10),
-          // Centered buttons for Edit and Delete
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
+              ElevatedButton.icon(
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('Edit Hike Details',
+                    style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    side: const BorderSide(color: Colors.green),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 onPressed: () {
-                  // Navigate to edit form for this hike
-                  Navigator.pushNamed(context, '/edit_hike');
-                },
-                child: const Text(
-                  'Edit Hike Details',
-                  style: TextStyle(color: Colors.green),
-                ),
-              ),
-              const SizedBox(width: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                onPressed: () {
-                  // Confirm and handle deletion
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text("Delete Hike"),
-                        content: const Text(
-                            "Are you sure you want to delete this hike?"),
-                        actions: [
-                          TextButton(
-                            child: const Text("Cancel"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: const Text("Delete"),
-                            onPressed: () {
-                              // Logic to delete the hike
-                              Navigator.of(context).pop();
-                              // Add deletion logic here
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddHikeForm(
+                        hikeId: id,
+                        title: title,
+                        location: location,
+                        description: description,
+                        date: date,
+                        parkingAvailable: parkingAvailable ?? false,
+                        length: length,
+                        difficulty: difficulty,
+                      ),
+                    ),
                   );
                 },
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.delete, size: 18),
+                label: const Text('Delete Hike',
+                    style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                onPressed: () {
+                  onDelete(context, id!);
+                },
               ),
             ],
           ),
@@ -417,4 +391,5 @@ class TrailReviewItem extends StatelessWidget {
       ),
     );
   }
+
 }
