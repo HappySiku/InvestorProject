@@ -1,3 +1,4 @@
+import 'add_hike.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,7 +53,7 @@ class HomePage extends StatelessWidget {
             Icon(Icons.terrain, color: Colors.green),
             SizedBox(width: 10),
             Text(
-              'Hike Explorer',
+              'M-Hike',
               style:
                   TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
@@ -135,7 +136,20 @@ class HomePage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            // Use async/await for modal result
+                            final newHike = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddHikeForm(),
+                              ),
+                            );
+                            // Handle the returned new hike data if any
+                            if (newHike != null) {
+                              // Add logic to handle the new hike data
+                              print(newHike); // Example usage of returned data
+                            }
+                          },
                           child: const Text('Add hike',
                               style: TextStyle(
                                 color: Colors.green,
@@ -269,6 +283,7 @@ class TrailReviewItem extends StatelessWidget {
   final String? difficulty; // Level of difficulty
   final String? description; // Optional description
 
+
   const TrailReviewItem({
     Key? key,
     this.title,
@@ -278,27 +293,43 @@ class TrailReviewItem extends StatelessWidget {
     this.length,
     this.difficulty,
     this.description,
+
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () {
-            Navigator.pushNamed(context, '/hike_details');
-          },
-          child: ListTile(
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/hike_details');
+            },
+            child: ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
               title ?? 'Unknown',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Location: ${location ?? 'Unknown'}'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Location: ${location ?? 'Unknown'}'),
                 Text(
                     'Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}'),
                 Text(
@@ -307,12 +338,83 @@ class TrailReviewItem extends StatelessWidget {
                 Text('Difficulty: ${difficulty ?? 'Unknown'}'),
                 if (description != null && description!.isNotEmpty)
                   Text('Description: $description'),
-              ],
+                ],
+              ),
+
             ),
           ),
-        ),
-        const Divider(),
-      ],
+          const SizedBox(height: 10),
+          // Centered buttons for Edit and Delete
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Colors.green),
+                  ),
+                ),
+                onPressed: () {
+                  // Navigate to edit form for this hike
+                  Navigator.pushNamed(context, '/edit_hike');
+                },
+                child: const Text(
+                  'Edit Hike Details',
+                  style: TextStyle(color: Colors.green),
+                ),
+              ),
+              const SizedBox(width: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () {
+                  // Confirm and handle deletion
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Delete Hike"),
+                        content: const Text(
+                            "Are you sure you want to delete this hike?"),
+                        actions: [
+                          TextButton(
+                            child: const Text("Cancel"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text("Delete"),
+                            onPressed: () {
+                              // Logic to delete the hike
+                              Navigator.of(context).pop();
+                              // Add deletion logic here
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
