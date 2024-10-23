@@ -9,6 +9,7 @@ import 'home.dart';
 import 'login.dart';
 import 'sign_up.dart';
 import 'intro_page.dart';
+import 'add_hike.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/hike_details': (context) =>  HikeDetails(),
         '/trails': (context) => const Trails(),
-        '/add_hike': (context) => const AddHike(),
+        // '/add_hike': (context) => HikeAddComponent(),
       },
     );
   }

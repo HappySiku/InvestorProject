@@ -1,6 +1,5 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-
+import 'add_hike.dart';
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -16,7 +15,7 @@ class HomePage extends StatelessWidget {
             Icon(Icons.terrain, color: Colors.green),
             SizedBox(width: 10),
             Text(
-              'Hike Explorer',
+              'M-Hike',
               style:
                   TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
@@ -80,7 +79,20 @@ class HomePage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            // Use async/await for modal result
+                            final newHike = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddHikeForm(),
+                              ),
+                            );
+                            // Handle the returned new hike data if any
+                            if (newHike != null) {
+                              // Add logic to handle the new hike data
+                              print(newHike); // Example usage of returned data
+                            }
+                          },
                           child: const Text('Add hike',
                               style: TextStyle(
                                 color: Colors.green,
@@ -223,7 +235,7 @@ class TrailReviewItem extends StatelessWidget {
   final String difficulty; // Level of difficulty
   final String? description; // Optional description
   final String? weatherForecast; // Weather forecast - custom field
-  final String? wildlife;// Wildlife sightings - custom field
+  final String? wildlife; // Wildlife sightings - custom field
 
   const TrailReviewItem({
     Key? key,
@@ -236,304 +248,131 @@ class TrailReviewItem extends StatelessWidget {
     this.description,
     this.weatherForecast,
     this.wildlife,
-
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () {
-          Navigator.pushNamed(context, '/hike_details');
-          },
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Location: $location'),
-                Text('Date: $date'),
-                Text('Parking Available: ${parkingAvailable ? 'Yes' : 'No'}'),
-                Text('Length: $length'),
-                Text('Difficulty: $difficulty'),
-                if (description != null && description!.isNotEmpty)
-                  Text('Description: $description'),
-                if (weatherForecast != null && weatherForecast!.isNotEmpty)
-                  Text('Weather Forecast: $weatherForecast'),
-                if (wildlife != null && wildlife!.isNotEmpty)
-                  Text('Wildlife Sightings: $wildlife'),
-              ],
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/hike_details');
+            },
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Location: $location'),
+                  Text('Date: $date'),
+                  Text('Parking Available: ${parkingAvailable ? 'Yes' : 'No'}'),
+                  Text('Length: $length'),
+                  Text('Difficulty: $difficulty'),
+                  if (description != null && description!.isNotEmpty)
+                    Text('Description: $description'),
+                  if (weatherForecast != null && weatherForecast!.isNotEmpty)
+                    Text('Weather Forecast: $weatherForecast'),
+                  if (wildlife != null && wildlife!.isNotEmpty)
+                    Text('Wildlife Sightings: $wildlife'),
+                ],
+              ),
             ),
           ),
-        ),
-        const Divider(),
-      ],
+          const SizedBox(height: 10),
+          // Centered buttons for Edit and Delete
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Colors.green),
+                  ),
+                ),
+                onPressed: () {
+                  // Navigate to edit form for this hike
+                  Navigator.pushNamed(context, '/edit_hike');
+                },
+                child: const Text(
+                  'Edit Hike Details',
+                  style: TextStyle(color: Colors.green),
+                ),
+              ),
+              const SizedBox(width: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () {
+                  // Confirm and handle deletion
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Delete Hike"),
+                        content: const Text(
+                            "Are you sure you want to delete this hike?"),
+                        actions: [
+                          TextButton(
+                            child: const Text("Cancel"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text("Delete"),
+                            onPressed: () {
+                              // Logic to delete the hike
+                              Navigator.of(context).pop();
+                              // Add deletion logic here
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-// import 'package:carousel_slider/carousel_slider.dart';
-// import 'package:flutter/material.dart';
-//
-// class HomePage extends StatelessWidget {
-//   const HomePage({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.grey[100],
-//       appBar: AppBar(
-//         elevation: 0,
-//         backgroundColor: Colors.transparent,
-//         actions: [
-//           IconButton(
-//             icon: const Icon(Icons.notifications_none, color: Colors.black),
-//             onPressed: () {},
-//           ),
-//         ],
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               const Text(
-//                 'Welcome',
-//                 style: TextStyle(
-//                   fontSize: 24,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               const SizedBox(height: 20),
-//               Container(
-//                 padding: const EdgeInsets.all(20),
-//                 decoration: BoxDecoration(
-//                   color: Colors.green,
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     const Text(
-//                       '',
-//                       style: TextStyle(color: Colors.white, fontSize: 16),
-//                     ),
-//                     const SizedBox(height: 10),
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         const Text(
-//                           '',
-//                           style: TextStyle(
-//                               color: Colors.white,
-//                               fontSize: 24,
-//                               fontWeight: FontWeight.bold),
-//                         ),
-//                         SizedBox(width: 10),
-//                         ElevatedButton(
-//                           style: ElevatedButton.styleFrom(
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(14),
-//                             ),
-//                             padding: const EdgeInsets.symmetric(
-//                                 horizontal: 20, vertical: 10),
-//                           ),
-//                           onPressed: () {},
-//                           child: const Text('Go',
-//                               style: TextStyle(
-//                                 color: Colors.green,
-//                               )),
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//               SizedBox(height: 20),
-//               const Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Text(
-//                     'Most Visited',
-//                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//                   ),
-//                   Row(
-//                     children: [
-//                       Text(
-//                         'See All',
-//                         style: TextStyle(color: Colors.red),
-//                       ),
-//                       SizedBox(width: 5),
-//                       Icon(
-//                         Icons.arrow_forward,
-//                         color: Colors.red,
-//                         size: 16,
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//               SizedBox(height: 10),
-//               // add a carousel
-//               CarouselSlider.builder(
-//                 itemCount: 3,
-//                 itemBuilder: (context, index, realIndex) {
-//                   switch (index) {
-//                     case 0:
-//                       return PlanCard(
-//                         color: Colors.green,
-//                         title: 'Alps',
-//                         returnPercentage: '',
-//                       );
-//                     case 1:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'Everest',
-//                         returnPercentage: '',
-//                       );
-//                     case 2:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'Lukenya',
-//                         returnPercentage: '',
-//                       );
-//                     default:
-//                       return const PlanCard(
-//                         color: Colors.green,
-//                         title: 'M. Kenya',
-//                         returnPercentage: '',
-//                       );
-//                   }
-//                 },
-//                 options: CarouselOptions(
-//                   height: MediaQuery.of(context).size.height * 0.2,
-//                   enableInfiniteScroll: true,
-//                   viewportFraction: 0.3,
-//                 ),
-//               ),
-//
-//               SizedBox(height: 20),
-//               const Text(
-//                 'Route Reviews',
-//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//               ),
-//               SizedBox(height: 10),
-//               const InvestmentGuideItem(
-//                 title: 'Himalayas',
-//                 description: 'Great views',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Mount Kenya',
-//                 description: 'Lovely adventure',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Mount Everest',
-//                 description: 'Explore the highest peak',
-//               ),
-//               const InvestmentGuideItem(
-//                 title: 'Lukenya',
-//                 description: 'Connect with nature',
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//       bottomNavigationBar: BottomNavigationBar(
-//         type: BottomNavigationBarType.fixed,
-//         items: const [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map_sharp),
-//             label: 'Routes',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.account_circle),
-//             label: 'Account',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// class PlanCard extends StatelessWidget {
-//   final Color color;
-//   final String title;
-//   final String returnPercentage;
-//
-//   const PlanCard({
-//     Key? key,
-//     required this.color,
-//     required this.title,
-//     required this.returnPercentage,
-//   }) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: 100,
-//       padding: EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: color,
-//         borderRadius: BorderRadius.circular(12),
-//       ),
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.start,
-//         children: [
-//           Text(
-//             title,
-//             style: TextStyle(
-//                 color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-//           ),
-//           SizedBox(height: 10),
-//           Text(
-//             returnPercentage,
-//             style: TextStyle(color: Colors.white),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// class InvestmentGuideItem extends StatelessWidget {
-//   final String title;
-//   final String description;
-//
-//   const InvestmentGuideItem({
-//     Key? key,
-//     required this.title,
-//     required this.description,
-//   }) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         ListTile(
-//           contentPadding: EdgeInsets.zero,
-//           trailing: const CircleAvatar(
-//             backgroundColor: Colors.blue,
-//             child: Icon(Icons.book, color: Colors.white),
-//           ),
-//           title: Text(
-//             title,
-//             style: TextStyle(fontWeight: FontWeight.bold),
-//           ),
-//           subtitle: Text(description),
-//         ),
-//         Divider(),
-//       ],
-//     );
-//   }
-// }
+
+
