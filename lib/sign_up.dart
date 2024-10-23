@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -36,6 +37,12 @@ class _SignUpState extends State<SignUp> {
         password: _passwordController.text,
       );
 
+      //save user data to shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('fullName', _fullNameController.text.trim());
+      prefs.setString('email', _emailController.text.trim());
+
+
       // Save user data to Firestore
       var fullName = _fullNameController.text.trim();
       await FirebaseFirestore.instance
@@ -44,8 +51,9 @@ class _SignUpState extends State<SignUp> {
           .set({
         'fullName': fullName,
         'email': _emailController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
+
       });
+
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(

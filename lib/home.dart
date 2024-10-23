@@ -1,7 +1,45 @@
-import 'package:flutter/material.dart';
 import 'add_hike.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  Future<String?> _getUserName() async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userName = prefs.getString('fullName');
+
+    if (userName != null && userName.isNotEmpty) {
+      return userName;
+    }
+    else {
+      // If the username is not available in shared preferences, get it from Firestore
+      final user = await FirebaseFirestore.instance
+          .collection('users')
+          .doc('uid')
+          .get();
+
+      if (user.exists) {
+        userName = user.get('fullName') as String?;
+        prefs.setString('fullName', userName!);
+        return userName;
+      }
+    }
+    return null;
+  }
+
+  Stream<List<Map<String, dynamic>>> _getHikes() {
+    final CollectionReference hikesCollection =
+        FirebaseFirestore.instance.collection('hikes');
+
+    return hikesCollection.snapshots().map((querySnapshot) {
+      return querySnapshot.docs.map((doc) {
+        return doc.data() as Map<String, dynamic>; // Correct casting
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +61,7 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.map, color: Colors.black),
+            icon: const Icon(Icons.notifications, color: Colors.green),
             onPressed: () {},
           ),
         ],
@@ -34,13 +72,32 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Welcome, Explorer!',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+              FutureBuilder<String?>(
+                future: _getUserName(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text(
+                      'Welcome, Explorer!',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    );
+                  } else {
+                    String? userName = snapshot.data?? 'Explorer';
+                    return Text(
+                      'Welcome, $userName!',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 20),
               Container(
@@ -63,7 +120,7 @@ class HomePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Let\'s get you started.',
+                          'Get started.',
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -124,41 +181,33 @@ class HomePage extends StatelessWidget {
               ),
               //add a static image
 
-
               SizedBox(height: 10),
-              const TrailReviewItem(
-                title: 'Himalayas',
-                description: 'Breath-taking views and challenging terrains.',
-                location: 'Nepal',
-                date: '2022-12-12',
-                parkingAvailable: true,
-                length: '10km',
-                difficulty: 'Hard',
-                weatherForecast: 'Sunny',
-                wildlife: 'Mountain goats',
-              ),
-              const TrailReviewItem(
-                title: 'Mount Kenya',
-                description:
-                    'An amazing experience, must for adventure lovers!',
-                location: 'Kenya',
-                date: '2022-12-12',
-                parkingAvailable: true,
-                length: '15km',
-                difficulty: 'Moderate',
-                weatherForecast: 'Sunny',
-                wildlife: 'Elephants',
-              ),
-              const TrailReviewItem(
-                title: 'Mount Everest',
-                description: 'The ultimate hike for thrill-seekers.',
-                location: 'Nepal',
-                date: '2022-12-12',
-                parkingAvailable: true,
-                length: '20km',
-                difficulty: 'Hard',
-                weatherForecast: 'Sunny',
-                wildlife: 'Snow leopards',
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _getHikes(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text('Failed to load hikes');
+                  } else if (snapshot.data!.isEmpty || !snapshot.hasData) {
+                    return const Text('No hikes available');
+                  } else {
+                    final hikes = snapshot.data!;
+                    return Column(
+                      children: hikes.map((hike) {
+                        return TrailReviewItem(
+                          title: hike['title'] as String?,
+                          location: hike['location'] as String?,
+                          date: hike['date'] as Timestamp?,
+                          parkingAvailable: hike['parkingAvailable'] as bool?,
+                          length: hike['length'],
+                          difficulty: hike['difficulty'] as String?,
+                          description: hike['description'] as String?,
+                        );
+                      }).toList(),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -172,7 +221,6 @@ class HomePage extends StatelessWidget {
             label: 'Explore',
           ),
           BottomNavigationBarItem(
-
             icon: Icon(Icons.map),
             label: 'Trails',
           ),
@@ -227,27 +275,25 @@ class HomePage extends StatelessWidget {
 }
 
 class TrailReviewItem extends StatelessWidget {
-  final String title; // Name of the hike
-  final String location; // Location of the hike
-  final String date; // Date of the hike
-  final bool parkingAvailable; // Parking available (Yes or No)
-  final String length; // Length of the hike
-  final String difficulty; // Level of difficulty
+  final String? title; // Name of the hike
+  final String? location; // Location of the hike
+  final Timestamp? date; // Date of the hike
+  final bool? parkingAvailable; // Parking available (Yes or No)
+  final dynamic length; // Length of the hike
+  final String? difficulty; // Level of difficulty
   final String? description; // Optional description
-  final String? weatherForecast; // Weather forecast - custom field
-  final String? wildlife; // Wildlife sightings - custom field
+
 
   const TrailReviewItem({
     Key? key,
-    required this.title,
-    required this.location,
-    required this.date,
-    required this.parkingAvailable,
-    required this.length,
-    required this.difficulty,
+    this.title,
+    this.location,
+    this.date,
+    this.parkingAvailable,
+    this.length,
+    this.difficulty,
     this.description,
-    this.weatherForecast,
-    this.wildlife,
+
   }) : super(key: key);
 
   @override
@@ -275,27 +321,26 @@ class TrailReviewItem extends StatelessWidget {
               Navigator.pushNamed(context, '/hike_details');
             },
             child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              title ?? 'Unknown',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Location: $location'),
-                  Text('Date: $date'),
-                  Text('Parking Available: ${parkingAvailable ? 'Yes' : 'No'}'),
-                  Text('Length: $length'),
-                  Text('Difficulty: $difficulty'),
-                  if (description != null && description!.isNotEmpty)
-                    Text('Description: $description'),
-                  if (weatherForecast != null && weatherForecast!.isNotEmpty)
-                    Text('Weather Forecast: $weatherForecast'),
-                  if (wildlife != null && wildlife!.isNotEmpty)
-                    Text('Wildlife Sightings: $wildlife'),
+                  Text('Location: ${location ?? 'Unknown'}'),
+                Text(
+                    'Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}'),
+                Text(
+                    'Parking Available: ${parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No'}'),
+                Text('Length: ${length != null ? ('${length}m') : 'Unknown'}'),
+                Text('Difficulty: ${difficulty ?? 'Unknown'}'),
+                if (description != null && description!.isNotEmpty)
+                  Text('Description: $description'),
                 ],
               ),
+
             ),
           ),
           const SizedBox(height: 10),
@@ -373,6 +418,3 @@ class TrailReviewItem extends StatelessWidget {
     );
   }
 }
-
-
-
