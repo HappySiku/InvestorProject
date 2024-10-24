@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'add_hike.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'hike_details.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,10 +17,8 @@ class HomePage extends StatelessWidget {
     if (userName != null && userName.isNotEmpty) {
       return userName;
     } else {
-      final user = await FirebaseFirestore.instance
-          .collection('users')
-          .doc('uid')
-          .get();
+      final user =
+          await FirebaseFirestore.instance.collection('users').doc('uid').get();
 
       if (user.exists) {
         userName = user.get('fullName') as String?;
@@ -30,7 +31,7 @@ class HomePage extends StatelessWidget {
 
   Stream<List<Map<String, dynamic>>> _getHikes() {
     final CollectionReference hikesCollection =
-    FirebaseFirestore.instance.collection('hikes');
+        FirebaseFirestore.instance.collection('hikes');
 
     return hikesCollection.snapshots().map((querySnapshot) {
       return querySnapshot.docs.map((doc) {
@@ -84,14 +85,24 @@ class HomePage extends StatelessWidget {
             SizedBox(width: 10),
             Text(
               'M-Hike',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.green),
-            onPressed: () {},
+            icon: const Icon(Icons.logout, color: Colors.green),
+            onPressed: () async {
+              //user logout from firebase
+              await FirebaseAuth.instance.signOut();
+              // navigate to login screen
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            },
           ),
         ],
       ),
@@ -194,16 +205,18 @@ class HomePage extends StatelessWidget {
                     'Upcoming Hikes',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  InkWell(
-                    onTap: () {},
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.search),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          Navigator.pushNamed(context, '/search_hikes');
+                        },
+                        icon: const Icon(
+                          Icons.search,
+                          color: Colors.green,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -222,15 +235,17 @@ class HomePage extends StatelessWidget {
                     return Column(
                       children: hikes.map((hike) {
                         return TrailReviewItem(
-                          id: hike['id'] as String?, // Pass the ID
+                          id: hike['id'] as String?,
+                          // Pass the ID
                           title: hike['title'] as String?,
                           location: hike['location'] as String?,
-                          date: hike['date'] as Timestamp?,
+                          date: (hike['date'] as Timestamp?),
                           parkingAvailable: hike['parkingAvailable'] as bool?,
                           length: hike['length'],
                           difficulty: hike['difficulty'] as String?,
                           description: hike['description'] as String?,
-                          onDelete: _confirmDelete, // Pass the confirm delete function
+                          onDelete:
+                              _confirmDelete, // Pass the confirm delete function
                         );
                       }).toList(),
                     );
@@ -240,23 +255,6 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Trails',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }
@@ -308,7 +306,20 @@ class TrailReviewItem extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/hike_details');
+              //pass the hike details to the next screen
+              Navigator.pushNamed(
+                context,
+                '/hike_details',
+                arguments: {
+                  'title': title,
+                  'location': location,
+                  'date': date,
+                  'parkingAvailable': parkingAvailable,
+                  'length': length,
+                  'difficulty': difficulty,
+                  'description': description,
+                },
+              );
             },
             child: ListTile(
               contentPadding: EdgeInsets.zero,
@@ -324,13 +335,21 @@ class TrailReviewItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  Text('Location: ${location ?? 'Unknown'}', style: TextStyle(fontSize: 16)),
-                  Text('Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}', style: TextStyle(fontSize: 16)),
-                  Text('Parking Available: ${parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No'}', style: TextStyle(fontSize: 16)),
-                  Text('Length: ${length != null ? ('${length}m') : 'Unknown'}', style: TextStyle(fontSize: 16)),
-                  Text('Difficulty: ${difficulty ?? 'Unknown'}', style: TextStyle(fontSize: 16)),
+                  Text('Location: ${location ?? 'Unknown'}',
+                      style: TextStyle(fontSize: 16)),
+                  Text(
+                      'Date: ${date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown'}',
+                      style: TextStyle(fontSize: 16)),
+                  Text(
+                      'Parking Available: ${parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No'}',
+                      style: TextStyle(fontSize: 16)),
+                  Text('Length: ${length != null ? ('${length}m') : 'Unknown'}',
+                      style: TextStyle(fontSize: 16)),
+                  Text('Difficulty: ${difficulty ?? 'Unknown'}',
+                      style: TextStyle(fontSize: 16)),
                   if (description != null && description!.isNotEmpty)
-                    Text('Description: $description', style: TextStyle(fontSize: 16)),
+                    Text('Description: $description',
+                        style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -340,13 +359,19 @@ class TrailReviewItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton.icon(
-                icon: const Icon(Icons.edit, size: 18),
-                label: const Text('Edit Hike Details',
-                    style: TextStyle(color: Colors.white),
+                icon: const Icon(
+                  Icons.edit,
+                  size: 18,
+                  color: Colors.white,
+                ),
+                label: const Text(
+                  'Edit Hike Details',
+                  style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -371,12 +396,17 @@ class TrailReviewItem extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               ElevatedButton.icon(
-                icon: const Icon(Icons.delete, size: 18),
+                icon: const Icon(
+                  Icons.delete,
+                  size: 18,
+                  color: Colors.white,
+                ),
                 label: const Text('Delete Hike',
                     style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -391,5 +421,4 @@ class TrailReviewItem extends StatelessWidget {
       ),
     );
   }
-
 }

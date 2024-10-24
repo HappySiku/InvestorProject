@@ -1,4 +1,6 @@
+import 'package:assessment/search_hikes.dart';
 import 'package:assessment/trails.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,6 +28,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,14 +38,16 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
+
       routes: {
         '/': (context) => const AuthWrapper(),
         '/intro': (context) => IntroPage(),
         '/signin': (context) => const SignIn(),
         '/signup': (context) => const SignUp(),
         '/home': (context) => const HomePage(),
-        '/hike_details': (context) =>  HikeDetails(),
         '/trails': (context) => const Trails(),
+        '/search_hikes': (context) => const SearchHikesPage(),
+        '/hike_details': (context) => HikeDetailsPage(),
         // '/add_hike': (context) => HikeAddComponent(),
       },
     );

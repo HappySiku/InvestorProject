@@ -13,6 +13,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obsLogIn = true;
   bool _isLoading = false;
 
   @override
@@ -120,7 +121,7 @@ class _SignInState extends State<SignIn> {
               children: [
                 const SizedBox(height: 20),
                 const Text(
-                  'Login',
+                  'Login to your account',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -130,6 +131,8 @@ class _SignInState extends State<SignIn> {
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.email),
+
                     labelText: 'Email address',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -139,8 +142,19 @@ class _SignInState extends State<SignIn> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obsLogIn,
                   decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obsLogIn ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obsLogIn = !_obsLogIn;
+                        });
+                      },
+                    ),
                     labelText: 'Password',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -161,7 +175,7 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.black,
+                      backgroundColor: Colors.green,
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(

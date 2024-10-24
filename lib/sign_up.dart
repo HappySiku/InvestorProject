@@ -139,6 +139,7 @@ class _SignUpState extends State<SignUp> {
               TextField(
                 controller: _fullNameController,
                 decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.person),
                   labelText: 'Full name',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16)),
@@ -148,6 +149,7 @@ class _SignUpState extends State<SignUp> {
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.mail),
                   labelText: 'Email address',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16)),
@@ -158,6 +160,7 @@ class _SignUpState extends State<SignUp> {
                 controller: _passwordController,
                 obscureText: _obs,
                 decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obs ? Icons.visibility : Icons.visibility_off,
@@ -178,6 +181,7 @@ class _SignUpState extends State<SignUp> {
                 controller: _confirmPasswordController,
                 obscureText: _obs2,
                 decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.shield),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obs2 ? Icons.visibility : Icons.visibility_off,
@@ -224,7 +228,7 @@ class _SignUpState extends State<SignUp> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.black,
+                    backgroundColor: Colors.green,
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(
