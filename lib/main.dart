@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_hike.dart';
+import 'add_observation.dart';
 import 'firebase_options.dart';
 import 'hike_details.dart';
 import 'home.dart';
@@ -23,36 +24,33 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+        ),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const AuthWrapper(),
+          '/intro': (context) => IntroPage(),
+          '/signin': (context) => const SignIn(),
+          '/signup': (context) => const SignUp(),
+          '/home': (context) => const HomePage(),
+          '/trails': (context) => const Trails(),
+          '/search_hikes': (context) => const SearchHikesPage(),
+          '/hike_details': (context) => const HikeDetailsPage(),
 
-      routes: {
-        '/': (context) => const AuthWrapper(),
-        '/intro': (context) => IntroPage(),
-        '/signin': (context) => const SignIn(),
-        '/signup': (context) => const SignUp(),
-        '/home': (context) => const HomePage(),
-        '/trails': (context) => const Trails(),
-        '/search_hikes': (context) => const SearchHikesPage(),
-        '/hike_details': (context) => HikeDetailsPage(),
-        // '/add_hike': (context) => HikeAddComponent(),
-      },
-    );
+        });
   }
 }
+
+
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});

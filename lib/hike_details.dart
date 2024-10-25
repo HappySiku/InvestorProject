@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'add_observation.dart';
+
 class HikeDetailsPage extends StatelessWidget {
   static const String routeName = '/hike_details';
 
@@ -9,6 +11,7 @@ class HikeDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Retrieve the arguments from the route settings
     final Map<String, dynamic>? arguments =
     ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
@@ -21,6 +24,8 @@ class HikeDetailsPage extends StatelessWidget {
       );
     }
 
+    // Extracting hike details from arguments with null safety
+    final String hikeId = arguments['hikeId'] as String? ?? 'Unknown ID'; // Provide a default value
     final String title = arguments['title'] as String? ?? 'Unknown';
     final String location = arguments['location'] as String? ?? 'Unknown';
     final Timestamp? date = arguments['date'] as Timestamp?;
@@ -47,7 +52,8 @@ class HikeDetailsPage extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: const DecorationImage(
-                  image: NetworkImage('https://example.com/hike-image.jpg'),
+                  image: NetworkImage(
+                      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Mount_Kenya.jpg/800px-Mount_Kenya.jpg'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -77,7 +83,9 @@ class HikeDetailsPage extends StatelessWidget {
                 ),
                 _iconText(
                   Icons.calendar_today,
-                  date != null ? DateFormat.yMMMd().format(date!.toDate()) : 'Unknown',
+                  date != null
+                      ? DateFormat.yMMMd().format(date.toDate())
+                      : 'Unknown',
                   Colors.blue,
                 ),
               ],
@@ -87,7 +95,7 @@ class HikeDetailsPage extends StatelessWidget {
             // Parking availability
             _detailCard(
               'Parking Available',
-              parkingAvailable != null && parkingAvailable! ? 'Yes' : 'No',
+              parkingAvailable != null && parkingAvailable ? 'Yes' : 'No',
               Icons.local_parking,
               Colors.orange,
             ),
@@ -105,14 +113,14 @@ class HikeDetailsPage extends StatelessWidget {
             const SizedBox(height: 10),
             _detailCard(
               'Difficulty Level',
-              difficulty!,
+              difficulty ?? 'Unknown', // Use null-aware operator
               Icons.terrain,
               Colors.redAccent,
             ),
 
             // Description
             const SizedBox(height: 20),
-            if (description != null && description!.isNotEmpty)
+            if (description != null && description.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -131,7 +139,7 @@ class HikeDetailsPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      description!,
+                      description,
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black87,
@@ -142,6 +150,18 @@ class HikeDetailsPage extends StatelessWidget {
               ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddObservationPage(hikeId: hikeId),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -161,7 +181,8 @@ class HikeDetailsPage extends StatelessWidget {
   }
 
   // Helper widget for displaying detail cards with an icon, title, and value
-  Widget _detailCard(String title, String value, IconData icon, Color iconColor) {
+  Widget _detailCard(
+      String title, String value, IconData icon, Color iconColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
